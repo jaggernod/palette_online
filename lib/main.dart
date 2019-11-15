@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:palette_online/image_field.dart';
 
 import 'palette_showcase.dart';
@@ -35,10 +36,25 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Uri uri = Uri.parse(
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYLJMPNl9X_9K05O19gtgSvwJE9780d4Zm3fQxXHA9qqVsaYl5pg&s');
+  Uri uri;
 
   Color _color;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Clipboard.getData('text/plain').then((data) {
+      print("Text ${data.text}");
+      if (data?.text != null &&
+          data.text.isNotEmpty &&
+          Uri.tryParse(data.text) != null) {
+        setState(() {
+          uri = Uri.parse(data.text);
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,25 +64,24 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: _color,
       ),
       body: Column(
-        children: <Widget>[
+        children: [
           Padding(
             padding: const EdgeInsets.all(16),
             child: ImageField(onChanged: (url) {
-              uri = Uri.parse(url);
-
-              setState(() {});
+              setState(() => uri = Uri.parse(url));
             }),
           ),
-          Expanded(
-            child: PaletteShowcase(
-              image: uri,
-              onColorSelected: (color) {
-                setState(() {
-                  _color = color;
-                });
-              },
+          if (uri != null)
+            Expanded(
+              child: PaletteShowcase(
+                image: uri,
+                onColorSelected: (color) {
+                  setState(() {
+                    _color = color;
+                  });
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
