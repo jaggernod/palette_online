@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:palette_generator/palette_generator.dart';
 
-class RelatedItem extends StatelessWidget {
-  const RelatedItem({Key key, @required this.image})
+class PaletteShowcase extends StatelessWidget {
+  const PaletteShowcase({Key key, @required this.image})
       : assert(image != null),
         super(key: key);
 
@@ -10,21 +10,14 @@ class RelatedItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 328,
-      height: 200,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _RelatedContent(
-              image: image,
-              defaultBackground: Colors.green,
-            ),
-          ],
+    return Row(
+      children: <Widget>[
+        Image.network(image.toString()),
+        _RelatedContent(
+          image: image,
+          defaultBackground: Colors.green,
         ),
-      ),
+      ],
     );
   }
 }
