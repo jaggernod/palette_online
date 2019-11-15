@@ -25,7 +25,7 @@ class PaletteShowcase extends StatelessWidget {
           flex: 1,
           child: _PaletteColors(
             image: image,
-              onColorSelected: onColorSelected,
+            onColorSelected: onColorSelected,
           ),
         ),
       ],
@@ -33,7 +33,7 @@ class PaletteShowcase extends StatelessWidget {
   }
 }
 
-class _PaletteColors extends StatelessWidget {
+class _PaletteColors extends StatefulWidget {
   const _PaletteColors({Key key, @required this.image, this.onColorSelected})
       : assert(image != null),
         super(key: key);
@@ -41,15 +41,66 @@ class _PaletteColors extends StatelessWidget {
   final Uri image;
   final OnColorSelected onColorSelected;
 
+  @override
+  __PaletteColorsState createState() => __PaletteColorsState();
+}
+
+class __PaletteColorsState extends State<_PaletteColors> {
+  Map<PaletteTarget, PaletteColor> selectedSwatches = {};
+
+  @override
+  void initState() {
+    super.initState();
+
+    _updatePaletteGenerator().then((palette) {
+      if (mounted) {
+        setState(() {
+          selectedSwatches = palette;
+        });
+      }
+    }).catchError((_) {
+      if (mounted) {
+        setState(() {
+          selectedSwatches = {};
+        });
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(_PaletteColors oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.image != widget.image) {
+      _updatePaletteGenerator().then((palette) {
+        if (mounted) {
+          setState(() {
+            selectedSwatches = palette;
+          });
+        }
+      }).catchError((_) {
+        if (mounted) {
+          setState(() {
+            selectedSwatches = {};
+          });
+        }
+      });
+    }
+  }
+
   Future<Map<PaletteTarget, PaletteColor>> _updatePaletteGenerator() async {
+    print('Generate palette...');
     try {
       final paletteGenerator = await PaletteGenerator.fromImageProvider(
-        NetworkImage(image.toString()),
+        NetworkImage(widget.image.toString()),
       );
 
       final swatches = Map.of(paletteGenerator.selectedSwatches);
 
       swatches[PaletteTarget()] = paletteGenerator.dominantColor;
+
+      print('Generate palette... Done ${swatches.length}');
+
       return swatches;
     } on Exception catch (e) {
       print('Unable to load the palette $e');
@@ -59,33 +110,26 @@ class _PaletteColors extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _updatePaletteGenerator(),
-      initialData: <PaletteTarget, PaletteColor>{},
-      builder:
-          (context, AsyncSnapshot<Map<PaletteTarget, PaletteColor>> snapshot) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children:
-              snapshot.data.entries.where((entry) => entry.value != null).map(
-            (entry) {
-              return GestureDetector(
-                onTap: () {
-                  if (onColorSelected != null) {
-                    onColorSelected(entry.value.color);
-                  }
-                },
-                child: _PaletteColor(
-                  colorName: _name(entry.key),
-                  paletteColor: entry.value,
-                ),
-              );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children:
+          selectedSwatches.entries.where((entry) => entry.value != null).map(
+        (entry) {
+          return GestureDetector(
+            onTap: () {
+              if (widget.onColorSelected != null) {
+                widget.onColorSelected(entry.value.color);
+              }
             },
-          ).toList(),
-        );
-      },
+            child: _PaletteColor(
+              colorName: _name(entry.key),
+              paletteColor: entry.value,
+            ),
+          );
+        },
+      ).toList(),
     );
   }
 
