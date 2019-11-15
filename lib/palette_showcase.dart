@@ -12,6 +12,7 @@ class PaletteShowcase extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
         Flexible(flex: 2, child: Image.network(image.toString())),
         Flexible(
@@ -33,16 +34,19 @@ class _PaletteColors extends StatelessWidget {
   final Uri image;
 
   Future<Map<PaletteTarget, PaletteColor>> _updatePaletteGenerator() async {
-    PaletteGenerator paletteGenerator =
-        await PaletteGenerator.fromImageProvider(
-      NetworkImage(image.toString()),
-      timeout: Duration.zero, // Never give up! Never surrender!
-    );
+    try {
+      final paletteGenerator = await PaletteGenerator.fromImageProvider(
+        NetworkImage(image.toString()),
+      );
 
-    final swatches = Map.of(paletteGenerator.selectedSwatches);
+      final swatches = Map.of(paletteGenerator.selectedSwatches);
 
-    swatches[PaletteTarget()] = paletteGenerator.dominantColor;
-    return swatches;
+      swatches[PaletteTarget()] = paletteGenerator.dominantColor;
+      return swatches;
+    } on Exception catch (e) {
+      print('Unable to load the palette $e');
+      return {};
+    }
   }
 
   @override
@@ -149,10 +153,7 @@ class _PaletteColorState extends State<_PaletteColor>
   }) async {
     if (mounted) {
       background = newPalette.color;
-      titleColor = newPalette.titleTextColor
-          .withRed(255 - newPalette.titleTextColor.red)
-          .withGreen(255 - newPalette.titleTextColor.red)
-          .withBlue(255 - newPalette.titleTextColor.blue);
+      titleColor = newPalette.titleTextColor;
 
       _backgroundColorTween = ColorTween(
         begin: oldPalette?.color ?? Colors.white,
@@ -188,6 +189,7 @@ class _PaletteColorState extends State<_PaletteColor>
           textAlign: TextAlign.center,
           style: TextStyle(
             color: _titleColorTween.evaluate(_animation),
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
