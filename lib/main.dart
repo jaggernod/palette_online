@@ -38,11 +38,14 @@ class _HomePageState extends State<HomePage> {
   Uri uri = Uri.parse(
       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYLJMPNl9X_9K05O19gtgSvwJE9780d4Zm3fQxXHA9qqVsaYl5pg&s');
 
+  Color _color;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        backgroundColor: _color,
       ),
       body: Column(
         children: <Widget>[
@@ -55,7 +58,14 @@ class _HomePageState extends State<HomePage> {
             }),
           ),
           Expanded(
-            child: PaletteShowcase(image: uri),
+            child: PaletteShowcase(
+              image: uri,
+              onColorSelected: (color) {
+                setState(() {
+                  _color = color;
+                });
+              },
+            ),
           ),
         ],
       ),

@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:palette_generator/palette_generator.dart';
 
+typedef OnColorSelected = void Function(Color);
+
 class PaletteShowcase extends StatelessWidget {
-  const PaletteShowcase({Key key, @required this.image})
-      : assert(image != null),
+  const PaletteShowcase({
+    Key key,
+    @required this.image,
+    this.onColorSelected,
+  })  : assert(image != null),
         super(key: key);
 
   final Uri image;
+  final OnColorSelected onColorSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +25,7 @@ class PaletteShowcase extends StatelessWidget {
           flex: 1,
           child: _PaletteColors(
             image: image,
+              onColorSelected: onColorSelected,
           ),
         ),
       ],
@@ -27,11 +34,12 @@ class PaletteShowcase extends StatelessWidget {
 }
 
 class _PaletteColors extends StatelessWidget {
-  const _PaletteColors({Key key, @required this.image})
+  const _PaletteColors({Key key, @required this.image, this.onColorSelected})
       : assert(image != null),
         super(key: key);
 
   final Uri image;
+  final OnColorSelected onColorSelected;
 
   Future<Map<PaletteTarget, PaletteColor>> _updatePaletteGenerator() async {
     try {
@@ -63,9 +71,16 @@ class _PaletteColors extends StatelessWidget {
           children:
               snapshot.data.entries.where((entry) => entry.value != null).map(
             (entry) {
-              return _PaletteColor(
-                colorName: _name(entry.key),
-                paletteColor: entry.value,
+              return GestureDetector(
+                onTap: () {
+                  if (onColorSelected != null) {
+                    onColorSelected(entry.value.color);
+                  }
+                },
+                child: _PaletteColor(
+                  colorName: _name(entry.key),
+                  paletteColor: entry.value,
+                ),
               );
             },
           ).toList(),
@@ -93,14 +108,18 @@ class _PaletteColors extends StatelessWidget {
 }
 
 class _PaletteColor extends StatefulWidget {
-  const _PaletteColor(
-      {Key key, @required this.colorName, @required this.paletteColor})
-      : assert(colorName != null),
+  const _PaletteColor({
+    Key key,
+    @required this.colorName,
+    @required this.paletteColor,
+    this.onColorSelected,
+  })  : assert(colorName != null),
         assert(paletteColor != null),
         super(key: key);
 
   final String colorName;
   final PaletteColor paletteColor;
+  final OnColorSelected onColorSelected;
 
   @override
   _PaletteColorState createState() => _PaletteColorState();
