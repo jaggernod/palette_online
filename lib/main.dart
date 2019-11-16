@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:palette_online/image_field.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:palette_online/color_bloc.dart';
+import 'package:palette_online/palette_bloc.dart';
 
 import 'palette_showcase.dart';
 
@@ -36,60 +37,48 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Uri uri;
-
-  Color _color;
-
-  @override
-  void initState() {
-    super.initState();
-
-    Clipboard.getData('text/plain').then((data) {
-      print("Text ${data.text}");
-      if (data?.text != null &&
-          data.text.isNotEmpty &&
-          Uri.tryParse(data.text) != null) {
-        final newUri = Uri.parse(data.text);
-
-        if (newUri.hasAuthority && newUri.hasScheme) {
-          setState(() {
-            uri = Uri.parse(data.text);
-          });
-        }
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        backgroundColor: _color,
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: ImageField(
-              onChanged: (url) {
-                setState(() => uri = Uri.parse(url));
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<PaletteBloc>(
+          builder: (_) => PaletteBloc(ticker: Ticker()),
+        ),
+        BlocProvider<ColorBloc>(builder: (_) => ColorBloc()),
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Column(
+          children: [
+            BlocBuilder<ColorBloc, ColorState>(
+              builder: (context, state) {
+                return Container(
+                  width: 200,
+                  height: 200,
+                  color: state.color,
+                );
               },
-              initial: uri?.toString(),
             ),
-          ),
-          if (uri != null)
             Expanded(
-              child: PaletteShowcase(
-                image: uri,
-                onColorSelected: (color) {
-                  setState(() {
-                    _color = color;
-                  });
-                },
+              child: Builder(
+                builder: (context) => BlocBuilder<PaletteBloc, PaletteState>(
+                    builder: (context, state) {
+                  return state.uri != null
+                      ? PaletteShowcase(
+                          image: state.uri,
+                          onColorSelected: (color) =>
+                              BlocProvider.of<ColorBloc>(context).add(
+                            SelectColor(color: color),
+                          ),
+                        )
+                      : SizedBox();
+                }),
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
