@@ -8,11 +8,13 @@ class ImageField extends StatefulWidget {
     Key key,
     @required this.onChanged,
     this.onTextInput,
+    this.initial,
   })  : assert(onChanged != null),
         super(key: key);
 
   final OnImport onChanged;
   final OnTextInput onTextInput;
+  final String initial;
 
   @override
   _ImageFieldState createState() => _ImageFieldState();
@@ -29,6 +31,10 @@ class _ImageFieldState extends State<ImageField>
   @override
   void initState() {
     super.initState();
+
+    if (widget.initial?.isNotEmpty ?? false) {
+      textController.text = widget.initial;
+    }
 
     hasText = textController.value.text.isNotEmpty;
 
@@ -47,6 +53,15 @@ class _ImageFieldState extends State<ImageField>
         hasText = textController.value.text.isNotEmpty;
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(ImageField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.initial != widget.initial && widget.initial != null) {
+      textController.text = widget.initial;
+    }
   }
 
   @override

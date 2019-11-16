@@ -49,9 +49,13 @@ class _HomePageState extends State<HomePage> {
       if (data?.text != null &&
           data.text.isNotEmpty &&
           Uri.tryParse(data.text) != null) {
-        setState(() {
-          uri = Uri.parse(data.text);
-        });
+        final newUri = Uri.parse(data.text);
+
+        if (newUri.hasAuthority && newUri.hasScheme) {
+          setState(() {
+            uri = Uri.parse(data.text);
+          });
+        }
       }
     });
   }
@@ -67,9 +71,12 @@ class _HomePageState extends State<HomePage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: ImageField(onChanged: (url) {
-              setState(() => uri = Uri.parse(url));
-            }),
+            child: ImageField(
+              onChanged: (url) {
+                setState(() => uri = Uri.parse(url));
+              },
+              initial: uri?.toString(),
+            ),
           ),
           if (uri != null)
             Expanded(
