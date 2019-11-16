@@ -21,19 +21,21 @@ class PaletteShowcase extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Flexible(
-            flex: 2,
-            child: Image.network(
-              image.toString(),
-              fit: BoxFit.cover,
-              width: 300,
-              height: 300,
-            )),
+        Image.network(
+          image.toString(),
+          fit: BoxFit.cover,
+          width: 300,
+          height: 300,
+        ),
         Flexible(
           flex: 1,
-          child: _PaletteColors(
-            image: image,
-            onColorSelected: onColorSelected,
+          child: SizedBox(
+            width: 300,
+            height: 300,
+            child: _PaletteColors(
+              image: image,
+              onColorSelected: onColorSelected,
+            ),
           ),
         ),
       ],
@@ -118,10 +120,7 @@ class __PaletteColorsState extends State<_PaletteColors> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.center,
+    return ListView(
       children:
           selectedSwatches.entries.where((entry) => entry.value != null).map(
         (entry) {
