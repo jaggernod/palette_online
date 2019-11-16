@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -51,14 +52,29 @@ class _HomePageState extends State<HomePage> {
           title: Text(widget.title),
         ),
         body: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             BlocBuilder<ColorBloc, ColorState>(
               builder: (context, state) {
-                return Container(
-                  width: 200,
-                  height: 200,
-                  color: state.color,
-                );
+                return state.color != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          color: state.color,
+                          child: Center(
+                            child: Text(
+                              '0x${state.color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      )
+                    : SizedBox();
               },
             ),
             Expanded(
@@ -73,7 +89,14 @@ class _HomePageState extends State<HomePage> {
                             SelectColor(color: color),
                           ),
                         )
-                      : SizedBox();
+                      : Center(
+                          child: Text(
+                          'Copy a web link of an image',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 32,
+                          ),
+                        ));
                 }),
               ),
             ),
